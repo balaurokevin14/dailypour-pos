@@ -20,16 +20,19 @@
 
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #E08CA2; overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
-  /* pink strip behind the phone's status bar (time, battery) */
-  .bar { position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: #E08CA2; }
+  /* Pink band under the phone's status bar. iOS 26 draws its own frosted status bar
+     with a soft blur that reaches ~20px below it, so the band is that much taller:
+     the blur only ever lands on plain pink, never on the page name. */
+  :root { --top: calc(env(safe-area-inset-top) + 24px); }
+  .bar { position: fixed; top: 0; left: 0; right: 0; height: var(--top); background: #E08CA2; }
   /* the app fills exactly the rest of the screen, so the page never scrolls */
-  iframe { position: fixed; top: env(safe-area-inset-top); left: 0; right: 0; bottom: 0; width: 100%; height: calc(100% - env(safe-area-inset-top)); border: 0; background: #FFFBD0; }
+  iframe { position: fixed; top: var(--top); left: 0; right: 0; bottom: 0; width: 100%; height: calc(100% - var(--top)); border: 0; background: #E08CA2; }
 </style>
 </head>
 <body>
   <div class="bar"></div>
   <!-- Paste your Apps Script Web app URL (ends in /exec) between the quotes -->
-  <iframe src="https://script.google.com/macros/s/AKfycbynJlkS5Ny_mWAdFh0RvdVqHIPZwyp6f3uXwYg1S1JkVpXTRZ66qd_ccTRX_6XigTqNew/exec" title="The Daily Pour POS" allow="clipboard-write"></iframe>
+  <iframe src="https://script.google.com/macros/s/AKfycbynJlkS5Ny_mWAdFh0RvdVqHIPZwyp6f3uXwYg1S1JkVpXTRZ66qd_ccTRX_6XigTqNew/exec" title="The Daily Pour POS" allow="clipboard-write; web-share"></iframe>
   <script>
     // block pinch-zoom on iPhone (Safari ignores user-scalable=no)
     ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (t) {
