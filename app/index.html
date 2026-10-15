@@ -11,7 +11,6 @@
 <link rel="apple-touch-icon-precomposed" sizes="180x180" href="https://balaurokevin14.github.io/dailypour-pos/apple-touch-icon.png?v=2">
 <link rel="icon" type="image/png" href="https://balaurokevin14.github.io/dailypour-pos/favicon.png?v=2">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="canonical" href="https://balaurokevin14.github.io/dailypour-pos/app/">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Daily Pour">
@@ -21,48 +20,18 @@
 
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #E08CA2; overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
-  /* pink strip behind the phone's status bar (time, battery) */
-  .bar { position: fixed; top: 0; left: 0; right: 0; height: var(--top, 0px); background: #E08CA2; }
-  /* the app's box: a plain div stretches between top and bottom (an iframe alone does not) */
-  #wrap { position: fixed; left: 0; right: 0; top: var(--top, 0px); bottom: 0; background: #E08CA2; }
-  #wrap iframe { display: block; width: 100%; height: 100%; border: 0; }
+  /* pink band exactly the height of the phone's status bar */
+  :root { --top: env(safe-area-inset-top); }
+  .bar { position: fixed; top: 0; left: 0; right: 0; height: var(--top); background: #E08CA2; }
+  /* the app fills exactly the rest of the screen, so the page never scrolls */
+  iframe { position: fixed; top: var(--top); left: 0; right: 0; bottom: 0; width: 100%; height: calc(100% - var(--top)); border: 0; background: #E08CA2; }
 </style>
 </head>
 <body>
   <div class="bar"></div>
   <!-- Paste your Apps Script Web app URL (ends in /exec) between the quotes -->
-  <div id="wrap">
-    <iframe src="https://script.google.com/macros/s/AKfycbyr2RGYJMJFMJvvQ6_gbqHOPBBzfOYnhE5unI3w9GET4uUoLpXx5cpwmn60ELEXCH0C/exec" title="The Daily Pour" allow="clipboard-write; web-share"></iframe>
-  </div>
+  <iframe src="https://script.google.com/macros/s/AKfycbyr2RGYJMJFMJvvQ6_gbqHOPBBzfOYnhE5unI3w9GET4uUoLpXx5cpwmn60ELEXCH0C/exec" title="The Daily Pour" allow="clipboard-write; web-share"></iframe>
   <script>
-    // Fit the app to the real screen. On iOS 26 home-screen apps the page reports a
-    // height about one status bar short of the screen, which left a pink strip at the
-    // bottom, so the box is sized from the screen itself.
-    var EDGE = true;   // true: app runs up behind the status bar and pads its own header
-    var probe = document.createElement('div');
-    probe.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top);visibility:hidden;pointer-events:none';
-    document.body.appendChild(probe);
-    function fit() {
-      var root = document.documentElement, wrap = document.getElementById('wrap');
-      var standalone = window.navigator.standalone === true ||
-        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-      var landscape = window.innerWidth > window.innerHeight;
-      if (!standalone || landscape) {           // Safari tab, laptop, or sideways: just fill the window
-        root.style.setProperty('--top', '0px');
-        wrap.style.bottom = '0'; wrap.style.height = '';
-        return;
-      }
-      var top = EDGE ? 0 : probe.offsetHeight;
-      var screenH = Math.max(screen.width, screen.height);
-      root.style.setProperty('--top', top + 'px');
-      wrap.style.bottom = 'auto';
-      wrap.style.height = (Math.max(screenH, window.innerHeight) - top) + 'px';
-    }
-    fit();
-    window.addEventListener('resize', fit);
-    window.addEventListener('orientationchange', function () { setTimeout(fit, 300); });
-    window.addEventListener('pageshow', fit);
-
     // block pinch-zoom on iPhone (Safari ignores user-scalable=no)
     ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (t) {
       document.addEventListener(t, function (e) { e.preventDefault(); }, { passive: false });
