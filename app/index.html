@@ -35,20 +35,28 @@
     <iframe src="https://script.google.com/macros/s/AKfycbyr2RGYJMJFMJvvQ6_gbqHOPBBzfOYnhE5unI3w9GET4uUoLpXx5cpwmn60ELEXCH0C/exec" title="The Daily Pour" allow="clipboard-write; web-share"></iframe>
   </div>
   <script>
-    // Leave room for the status bar only when the page really draws under it
-    // (the page is then as tall as the whole screen). On iOS 26.1+ home-screen apps
-    // start below the status bar but still report its height; using it there
-    // pushed the app down and caused the gap.
+    // Fit the app to the real screen. On iOS 26 home-screen apps the page reports a
+    // height about one status bar short of the screen, which left a pink strip at the
+    // bottom, so the box is sized from the screen itself.
+    var EDGE = true;   // true: app runs up behind the status bar and pads its own header
     var probe = document.createElement('div');
     probe.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top);visibility:hidden;pointer-events:none';
     document.body.appendChild(probe);
     function fit() {
+      var root = document.documentElement, wrap = document.getElementById('wrap');
       var standalone = window.navigator.standalone === true ||
         (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
       var landscape = window.innerWidth > window.innerHeight;
-      var screenH = landscape ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
-      var under = standalone && !landscape && window.innerHeight >= screenH - 2;
-      document.documentElement.style.setProperty('--top', (under ? probe.offsetHeight : 0) + 'px');
+      if (!standalone || landscape) {           // Safari tab, laptop, or sideways: just fill the window
+        root.style.setProperty('--top', '0px');
+        wrap.style.bottom = '0'; wrap.style.height = '';
+        return;
+      }
+      var top = EDGE ? 0 : probe.offsetHeight;
+      var screenH = Math.max(screen.width, screen.height);
+      root.style.setProperty('--top', top + 'px');
+      wrap.style.bottom = 'auto';
+      wrap.style.height = (Math.max(screenH, window.innerHeight) - top) + 'px';
     }
     fit();
     window.addEventListener('resize', fit);
