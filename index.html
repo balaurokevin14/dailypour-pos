@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>The Daily Pour POS</title>
 
@@ -14,17 +14,27 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Daily Pour">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<!-- status bar sits on the pink header colour instead of a white blur -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#E08CA2">
 
 <style>
-  html, body { margin: 0; height: 100%; background: #E08CA2; }
-  body { padding-top: env(safe-area-inset-top); box-sizing: border-box; }
-  iframe { display: block; width: 100%; height: 100%; border: 0; background: #FFFBD0; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #E08CA2; overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+  /* pink strip behind the phone's status bar (time, battery) */
+  .bar { position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: #E08CA2; }
+  /* the app fills exactly the rest of the screen, so the page never scrolls */
+  iframe { position: fixed; top: env(safe-area-inset-top); left: 0; right: 0; bottom: 0; width: 100%; height: calc(100% - env(safe-area-inset-top)); border: 0; background: #FFFBD0; }
 </style>
 </head>
 <body>
+  <div class="bar"></div>
   <!-- Paste your Apps Script Web app URL (ends in /exec) between the quotes -->
   <iframe src="https://script.google.com/macros/s/AKfycbynJlkS5Ny_mWAdFh0RvdVqHIPZwyp6f3uXwYg1S1JkVpXTRZ66qd_ccTRX_6XigTqNew/exec" title="The Daily Pour POS" allow="clipboard-write"></iframe>
+  <script>
+    // block pinch-zoom on iPhone (Safari ignores user-scalable=no)
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (t) {
+      document.addEventListener(t, function (e) { e.preventDefault(); }, { passive: false });
+    });
+  </script>
 </body>
 </html>
