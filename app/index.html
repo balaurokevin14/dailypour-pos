@@ -21,11 +21,13 @@
 
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #E08CA2; overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
-  /* pink band exactly the height of the phone's status bar */
-  :root { --top: env(safe-area-inset-top); }
+  /* --top is 0 unless the page really sits under the status bar (set by the script below).
+     iOS 26.1+ keeps web apps below the status bar but still reports its height,
+     which used to push the app down and leave a pink strip at the bottom. */
+  :root { --top: 0px; }
   .bar { position: fixed; top: 0; left: 0; right: 0; height: var(--top); background: #E08CA2; }
   /* the app fills exactly the rest of the screen, so the page never scrolls */
-  iframe { position: fixed; top: var(--top); left: 0; right: 0; bottom: 0; width: 100%; height: calc(100% - var(--top)); border: 0; background: #E08CA2; }
+  iframe { position: fixed; top: var(--top); left: 0; right: 0; bottom: 0; width: 100%; border: 0; background: #E08CA2; }
 </style>
 </head>
 <body>
@@ -33,6 +35,16 @@
   <!-- Paste your Apps Script Web app URL (ends in /exec) between the quotes -->
   <iframe src="https://script.google.com/macros/s/AKfycbyr2RGYJMJFMJvvQ6_gbqHOPBBzfOYnhE5unI3w9GET4uUoLpXx5cpwmn60ELEXCH0C/exec" title="The Daily Pour" allow="clipboard-write; web-share"></iframe>
   <script>
+    // Only leave room for the status bar when the page actually draws underneath it
+    // (older iPhones with the translucent bar: the page is then as tall as the screen).
+    function fitTop() {
+      var under = window.navigator.standalone && Math.abs(window.innerHeight - window.screen.height) < 2 && window.innerWidth < window.innerHeight;
+      document.documentElement.style.setProperty('--top', under ? 'env(safe-area-inset-top)' : '0px');
+    }
+    fitTop();
+    window.addEventListener('resize', fitTop);
+    window.addEventListener('orientationchange', function () { setTimeout(fitTop, 300); });
+
     // block pinch-zoom on iPhone (Safari ignores user-scalable=no)
     ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (t) {
       document.addEventListener(t, function (e) { e.preventDefault(); }, { passive: false });
