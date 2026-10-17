@@ -21,7 +21,11 @@
 <meta name="theme-color" content="#E08CA2">
 
 <style>
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #E08CA2; overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+  html, body { margin: 0; background: #E08CA2; overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+  /* the page is 2px taller than the screen so iPhone's "tap the status bar to scroll up" has
+     something to scroll; the app itself stays fixed and full-screen */
+  html { height: 100%; }
+  body { height: calc(100% + 2px); }
   /* the app fills the whole page; pink so iOS tints the status bar pink (it takes the colour at the top) */
   iframe { position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: 0; background: #E08CA2; }
 </style>
@@ -30,6 +34,29 @@
   <!-- Paste your Apps Script Web app URL (ends in /exec) between the quotes -->
   <iframe src="https://script.google.com/macros/s/AKfycbyr2RGYJMJFMJvvQ6_gbqHOPBBzfOYnhE5unI3w9GET4uUoLpXx5cpwmn60ELEXCH0C/exec" title="The Daily Pour" allow="clipboard-write; web-share"></iframe>
   <script>
+    // Tap the status bar (time / battery) → scroll the app to the top.
+    // iPhone only scrolls this outer page when the status bar is tapped, so we keep it 2px down;
+    // when it jumps back to the top we tell the app (inside Google's frames) to scroll up too.
+    (function () {
+      var frame = document.querySelector('iframe'), armed = false;
+      function arm() { window.scrollTo(0, 2); armed = window.scrollY > 0; }
+      function tell(win, depth) {
+        try { win.postMessage({ tdp: 'scrollTop' }, '*'); } catch (e) {}
+        if (depth > 4) return;
+        try { for (var i = 0; i < win.length; i++) tell(win[i], depth + 1); } catch (e) {}
+      }
+      window.addEventListener('scroll', function () {
+        if (armed && window.scrollY <= 0) {
+          armed = false;
+          tell(frame.contentWindow, 0);
+          setTimeout(arm, 450);
+        }
+      }, { passive: true });
+      window.addEventListener('load', function () { setTimeout(arm, 300); });
+      window.addEventListener('pageshow', function () { setTimeout(arm, 300); });
+      window.addEventListener('resize', function () { setTimeout(arm, 300); });
+    })();
+
     // block pinch-zoom on iPhone (Safari ignores user-scalable=no)
     ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (t) {
       document.addEventListener(t, function (e) { e.preventDefault(); }, { passive: false });
